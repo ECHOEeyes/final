@@ -1,0 +1,58 @@
+《zxjc01.m》
+clear,close all
+strImg='test2.png';  %选择被处理的图像
+Img=imread(strImg);
+%Img_Gray=rgb2gray(Img);
+Img_Gray=Img(:,:,1);
+subplot(2,3,1);imshow(Img_Gray);title([strImg '原图像']);  %显示原图像
+%用Roberts算子进行边缘检测
+BM1=edge(Img_Gray,'roberts');
+subplot(2,3,2);imshow(BM1);title([strImg ' roberts算子']);
+% imwrite(BM1,[strImg(1:5) '_roberts.png']);
+%用prewitt算子进行边缘检测
+BM2=edge(Img_Gray,'prewitt');
+subplot(2,3,3);imshow(BM2);title([strImg ' prewitt算子']);
+% imwrite(BM2,[strImg(1:5) '_prewitt.png']);
+%用sobel算子进行边缘检测
+BM3=edge(Img_Gray,'sobel');
+subplot(2,3,4);imshow(BM3);title([strImg ' sobel算子']);
+% imwrite(BM3,[strImg(1:5) '_sobel.png']);
+%用log算子进行边缘检测
+BM4=edge(Img_Gray,'log');
+subplot(2,3,5);imshow(BM4);title([strImg ' log算子']);
+% imwrite(BM4,[strImg(1:5) '_log.png']);
+%用Canny算子进行边缘检测
+BM5=edge(Img_Gray,'canny');
+subplot(2,3,6);imshow(BM5);title([strImg ' canny算子']);
+imwrite(BM5,[strImg(1:5) '_canny.png']);
+
+《zxjc02.m》
+clear,close all
+strImg='test2_canny.png';  %选择被处理的图像
+Img=[strImg(1:5) strImg((length(strImg)-3):length(strImg))];
+BW=imread(strImg);
+%figure,imshow(BW);  %显示原图像
+%title([strImg '原图像']);
+%用边缘检测后的二值图像做霍夫变换
+[H,Theta,Rho] = hough(BW,'RhoResolution',1,'Theta',-90:1:89);
+figure, imshow(H,[],'XData',Theta,'YData',Rho,'InitialMagnification','fit'),...
+    title('rho\_theta space and peaks');
+xlabel('\theta'), ylabel('\rho');
+axis on, axis normal, hold on;
+% 标记出累加单元数目最多的前五个交叉点
+P  = houghpeaks(H,5,'threshold',ceil(0.3*max(H(:))));
+x = Theta(P(:,2)); 
+y = Rho(P(:,1));
+plot(x,y,'*','color','y');
+% 找出阈值以上交叉点所对应直线，并画图
+lines = houghlines(BW,Theta,Rho,P,'FillGap',5,'MinLength',7);
+figure, imshow(Img), hold on
+% max_len = 0;
+for k = 1:length(lines)
+    xy = [lines(k).point1; lines(k).point2];
+	plot(xy(:,1),xy(:,2),'LineWidth',1,'Color','y');
+%     % 画出直线首末端
+% 	plot(xy(1,1),xy(1,2),'x','LineWidth',1,'Color','yellow');
+% 	plot(xy(2,1),xy(2,2),'x','LineWidth',1,'Color','red');
+end
+
